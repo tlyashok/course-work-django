@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Корзина товаров</h1>
+    <div class="row">
+        {% if products %}
+            <div class="col">
+                <div class="container d-flex justify-content-center">
+                    <button onclick="generateReport()" class="btn btn-dark">Сформировать заказ</button>
+                </div>
+                <table class="table mt-2">
+                    <thead>
+                        <tr>
+                            <th scope="col">Наименование товара</th>
+                            <th scope="col">Цена</th>
+                            <th scope="col">Количество</th>
+                            <th scope="col">Итого</th>
+                            <th scope="col"></th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in products %}
+                            <tr>
+                                <td>{{ item.product.product_name }}</td>
+                                <td>{{ item.product.price }}</td>
+                                <td id="count-{{ item.product.product_id }}">{{ item.count }}</td>
+                                <td id="total-{{ item.product.product_id }}">{{ item.total_price }}</td>
+                                <td class="d-flex">
+                                    <button class="btn btn-primary me-2 w-30" onclick="updateBasket({{ item.product.product_id }}, 'add')">+</button>
+                                    <button class="btn btn-danger w-30" onclick="updateBasket({{ item.product.product_id }}, 'remove')">-</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-center">Ваша корзина пуста.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+    function updateBasket(productId, action) {
+        const url = action === 'add' ? '{% url "add_product" 0 %}'.replace('0', productId) : '{% url "delete_product" 0 %}'.replace('0', productId);
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const countElement = document.getElementById('count-' + productId);
+                    const totalElement = document.getElementById('total-' + productId);
+                    const price = parseFloat(totalElement.textContent) / parseInt(countElement.textContent);
+                    countElement.textContent = data.count;
+                    totalElement.textContent = (price * data.count).toFixed(2);
+                    if (data.count < 1) {
+                        countElement.parentElement.remove();
+                    }
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+
+{% load static %}
+<script src="{% static 'basket.js' %}"></script>
+
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.category_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3 class="text-center mb-4">{{ category.category_name }}</h3>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    Фильтры
+                </div>
+                <div class="card-body">
+                    <form id="filterForm" method="get">
+                        <div id="filtersContainer">
+                            <div class="form-group">
+                                <label for="search_input">Поиск:</label>
+                                <input type="text" class="form-control" id="search_input" name="search_input" placeholder="Поиск">
+                            </div>
+                            <div class="form-group">
+                                <label for="price_min">Минимальная цена:</label>
+                                <input type="number" class="form-control" id="price_min" name="price_min" placeholder="Минимальная цена">
+                            </div>
+                            <div class="form-group">
+                                <label for="price_max">Максимальная цена:</label>
+                                <input type="number" class="form-control" id="price_max" name="price_max" placeholder="Максимальная цена">
+                            </div>
+                            <div class="form-group">
+                                <label for="sort_by_price">Сортировать по цене:</label>
+                                <select class="form-select" id="sort_by_price" name="sort_by_price">
+                                    <option value="asc">По возрастанию</option>
+                                    <option value="desc">По убыванию</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Применить фильтры</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="row" id="productContainer" 
+                 data-filters="{{ filters|escapejs }}" 
+                 data-products="{{ products|escapejs }}">
+
+            </div>
+        </div>
+    </div>
+    <div id="authData" data-is-authenticated="{{ user.is_authenticated }}"></div>
+</div>
+{% load static %}
+<script src="{% static 'app.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const filters = JSON.parse('{{ filters|safe }}');
+        const products = JSON.parse('{{ products|safe }}');
+    
+        initializeFilters(filters, products);
+        displayProducts(products);
+    });
+</script>
+{% endblock %}  
